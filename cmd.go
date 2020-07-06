@@ -26,13 +26,12 @@ const servDomain = "local."
 var (
 
 	//droplocal client configuration
-	instance = flag.String("n", "", "the destination service name")
-	files    = flag.String("f", "", "source file for upload")
+	files = flag.String("f", "", "source file for upload")
 
 	//used by zeroconf client
 	servMode = flag.Bool("s", false, "run in server mode")
 
-	//server configuration servDir default set to User's home dir see func serveAndAdvertise()
+	//server configuration servDir default set to User's home dir see func newFtpServer()
 	servDir = flag.String("d", "", "dir to serve file uploaded")
 	user    = flag.String("u", "admin", "Username for login")
 	pass    = flag.String("p", "password", "Password for login")
@@ -208,17 +207,18 @@ func uploadFile(instance, file string) {
 		return
 	}
 
-	uploadFile2(addr, file)
+	uploadFile(addr, file)
 }
 */
-
+/*
 func uploadFile3(host string, port int, file string) {
 
 	addr := fmt.Sprintf("%s:%d", host, port)
-	uploadFile2(addr, file)
+	uploadFile(addr, file)
 }
-
-func uploadFile2(addr string, file string) {
+*/
+func uploadFile(host string, port int, file string) {
+	addr := fmt.Sprintf("%s:%d", host, port)
 
 	// step 2: uploaded the specivied file
 	c, err := ftp.Dial(addr, ftp.DialWithTimeout(5*time.Second))
@@ -284,7 +284,7 @@ func main() {
 		idx, _ := chooseInstance(ir)
 
 		cfile := chooseFile()
-		uploadFile3(ir[idx].hostname, ir[idx].port, cfile)
+		uploadFile(ir[idx].hostname, ir[idx].port, cfile)
 		//
 		//		if len(*instance) > 0 && len(*files) > 0 {
 		//			//drop mode : need an advertised droplocal service
