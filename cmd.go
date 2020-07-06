@@ -66,7 +66,7 @@ func advertiseWith(iName string) *zeroconf.Server {
 	return service
 }
 
-func newFtpServer(iName string) *gserver.Server {
+func configFtpServer(iName string) *gserver.Server {
 	// the server needs a dir to save the download files
 	if *servDir == "" {
 		//using the user's home directory as the default serve directory
@@ -128,7 +128,7 @@ func listInstance(servType, servDomain string, timeoutSecond int) (records []iRe
 		return
 	}
 
-	log.Println("browe the local link to find the available instance")
+	//log.Println("browse the local link to find the available instance")
 	//TODO the timeout setting above may cause some problem for a crowded local link
 	//it will stop the range loop earlier than expected
 	for e := range entries {
@@ -136,7 +136,7 @@ func listInstance(servType, servDomain string, timeoutSecond int) (records []iRe
 
 		one := iRecord{iName: e.Instance, hostname: e.HostName, port: e.Port}
 		records = append(records, one)
-		log.Printf("add record: %v\n", one)
+		//log.Printf("add record: %v\n", one)
 
 		select {
 		case <-ctx.Done():
@@ -148,7 +148,7 @@ func listInstance(servType, servDomain string, timeoutSecond int) (records []iRe
 		}
 	}
 
-	log.Println("browse finished.")
+	//log.Println("browse finished.")
 	return
 }
 
@@ -254,7 +254,7 @@ func uploadFile(host string, port int, file string) {
 
 // inputDest show the list to the client, let them choose one by index
 // return the client chosen index
-func chooseInstance(ir []iRecord) (idx int, err error) {
+func chooseInstance(ir []iRecord) (idx int) {
 	for {
 		fmt.Printf("%5s |  %s\n", "index", "service name @ machine")
 
@@ -271,35 +271,62 @@ func chooseInstance(ir []iRecord) (idx int, err error) {
 	return
 }
 
-//TODO simply choose a file
-func chooseFile() string {
-	return "/Users/qiwang/droplocal/droplocal"
+//if it's a regular file. return it. otherwise return ""
+func checkFile(file string) bool {
+	fileInfo, err := os.Lstat(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	supported := false
+	//fmt.Printf("permissions: %#o\n", fileInfo.Mode().Perm()) // 0400, 0777, etc.
+	switch mode := fileInfo.Mode(); {
+	case mode.IsRegular():
+		supported = true
+	case mode.IsDir():
+		fmt.Println("don't support directory!")
+	case mode&os.ModeSymlink != 0:
+		fmt.Println("don't support symbolic link!")
+	case mode&os.ModeNamedPipe != 0:
+		fmt.Println("don't support named pipe!")
+	}
+
+	return supported
 }
 
 func main() {
 	flag.Parse()
 
 	if *servMode == false {
-		ir, _ := listInstance(servType, servDomain, 3)
-		idx, _ := chooseInstance(ir)
 
-		cfile := chooseFile()
-		uploadFile(ir[idx].hostname, ir[idx].port, cfile)
-		//
-		//		if len(*instance) > 0 && len(*files) > 0 {
-		//			//drop mode : need an advertised droplocal service
-		//			uploadFile(*instance, *files)
-		//		} else {
-		//			//find mode : try to find a droplocal service
-		//			findInstance()
-		//		}
+		//step1: check the files first
+		if len(*files) == 0 {
+			fmt.Println("you should specified a file with -f")
+			fmt.Printf("try %s -h\n", os.Args[0])
+			return
+		}
+		if !checkFile(*files) {
+			return
+		}
+
+		//step2: let user pick up the instance from the list
+		ir, err := listInstance(servType, servDomain, 3)
+		if err != nil {
+			fmt.Printf("when pick up instance, there is an error: %s\n", err)
+		}
+		idx := chooseInstance(ir)
+
+		//step3: upload the file to the target machine
+		uploadFile(ir[idx].hostname, ir[idx].port, *files)
+		fmt.Println("mission accomplished!")
+
 	} else {
 		// important lesson to learn:
 		// Deferred Functions Are Not Always Guaranteed To Executed
 		// such as the following case: received os.Interrupt or syscall.SIGTERM
 
 		iName := instanceNameFactory() //TODO consider save the iName for future use
-		ftpServer := newFtpServer(iName)
+		ftpServer := configFtpServer(iName)
 		go startFtpServer(ftpServer)
 		// defer ftpServer.Shutdown()
 		servAd := advertiseWith(iName)
