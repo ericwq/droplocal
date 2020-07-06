@@ -3,16 +3,15 @@
 allow LAN user transfer files to each other without knowing machine name / port number first. it's based on zero configuration network or bonjour technology. writing with go language.it's a try project for me to get familiar with the zero configuration network.
 
 ## install
-```go get github.com/ericwq/droplocal```
-get the source and build the executable file by 
-```go build```
-
+` go get github.com/ericwq/droplocal ` get the source and build the executable file by ` go build `
 ## usage
 
 ### step1: start the droplocal server
-1. find the executive file and run ```./droplocal -s &```
-2. optional you can also redirect the log to somewhere e.g. ```./droplocal -s & > /tmp/droplocal.2020.06.log```
-
+1. find the executive file and run ` ./droplocal -s & `
+2. optionally you can also redirect the log to somewhere e.g. 
+```
+./droplocal -s & > /tmp/droplocal.2020.06.log
+```
 you can start multiple servers on you local LAN. here is the output from the above command
 ```
 /Users/qiwang/dev/droplocal
@@ -23,7 +22,7 @@ qiwang@Einstein droplocal % ./droplocal -s
 2020/07/06 15:01:22   Drop Local 27422438 listening on 2121
 2020/07/06 15:01:22 advertise the Drop Local 27422438 on local link`
 ```
-you can also stop the server via Ctrl-C.
+you can also stop the server via Ctrl-C. or just use the *kill* command
 ```
 qiwang@Einstein droplocal % ./droplocal -s 
 2020/07/06 15:01:22 the serve dir is /Users/qiwang
