@@ -65,6 +65,11 @@ please choose the destination, please use the index to choose.
 mission accomplished!
 qiwang@Einstein droplocal % 
 ```
+- the system will query the LAN, find the available drop local services, here only one service is available.
+- the system prompt you to choose the target service/machine, in this case, only "Drop\ Local\ 3949183984" at machine "Oppenheimer.local" is available
+- use the index to choose the machine, and return to confirm the choice.
+- the system will transfer the file to the target machine.
+
 now. the util.go file has been transfered to the Oppenheimer machine on the LAN. Of course, A lives droplocal server is running on that machine. 
 ### step3: check the user's home directory on Oppenheimer
 you will find a util.go file exist on that machine.
