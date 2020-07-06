@@ -22,7 +22,7 @@ qiwang@Einstein droplocal % ./droplocal -s
 2020/07/06 15:01:22 using the name:Drop Local 27422438
 2020/07/06 15:01:22   Drop Local 27422438 listening on 2121
 2020/07/06 15:01:22 advertise the Drop Local 27422438 on local link`
-
+```
 you can also stop the server via Ctrl-C.
 ```
 qiwang@Einstein droplocal % ./droplocal -s 
@@ -42,7 +42,6 @@ qiwang@Einstein droplocal %
 - `-u` specified the username
 - `-p` specified the user passward
 - `-f` specified the file you want to transfer
-
 ```
 qiwang@Einstein droplocal % ./droplocal -h
 Usage of ./droplocal:
