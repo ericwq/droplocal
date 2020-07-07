@@ -141,7 +141,7 @@ func listInstance(servType, servDomain string, timeoutSecond int) (records []iRe
 		select {
 		case <-ctx.Done():
 			//ready to finish?
-			log.Println("receive finished message from the done channel")
+			//log.Println("receive finished message from the done channel")
 			return
 		default:
 			//don't block it
@@ -152,71 +152,6 @@ func listInstance(servType, servDomain string, timeoutSecond int) (records []iRe
 	return
 }
 
-/*
-func browseIPandPort(instance string) (string, error) {
-	resolver, err := zeroconf.NewResolver(nil)
-	if err != nil {
-		log.Fatalln("Failed to initialize resolver:", err.Error())
-	}
-
-	entries := make(chan *zeroconf.ServiceEntry)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(3))
-	defer cancel()
-	err = resolver.Browse(ctx, servType, servDomain, entries)
-	if err != nil {
-		log.Fatalln("Failed to browse:", err.Error())
-	}
-
-	log.Println("prepare to receive the browsed entry")
-	//TODO the timeout setting above may cause some problem for a crowded local link
-	//it will stop the range loop earlier than expected
-	for e := range entries {
-		log.Printf("receive the entry %s:%d\n", e.HostName, e.Port)
-
-		// TODO simple solution: replace the `\ ` escape with ` `
-		// consider standard DNS escape convention
-		iName := strings.ReplaceAll(e.Instance, "\\ ", " ")
-		log.Printf("entry: %s, instance:%s\n", iName, instance)
-
-		if strings.HasPrefix(iName, instance) {
-			//TODO returned when find the first match, consider the more instance case
-			log.Printf("got matched instance:%s\n", iName)
-			return fmt.Sprintf("%s:%d", e.HostName, e.Port), nil
-		}
-
-		select {
-		case <-ctx.Done():
-			//ready to finish?
-			log.Println("receive finished message from the done channel")
-			return "", errors.New("zeroconf browse context is done")
-		default:
-			//don't block it
-		}
-	}
-
-	//deal with the case we didn't get the result
-	return "", errors.New("Not find instance")
-}
-
-func uploadFile(instance, file string) {
-	// step 1: lookup service name to get the hostname:ip and port
-	log.Printf("the instance: %s, the file: %s\n", instance, file)
-	addr, err := browseIPandPort(instance)
-	if err != nil {
-		log.Printf("find the instance error: %s\n", err)
-		return
-	}
-
-	uploadFile(addr, file)
-}
-*/
-/*
-func uploadFile3(host string, port int, file string) {
-
-	addr := fmt.Sprintf("%s:%d", host, port)
-	uploadFile(addr, file)
-}
-*/
 func uploadFile(host string, port int, file string) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 
@@ -321,7 +256,14 @@ func main() {
 		idx := chooseInstance(ir)
 
 		//step3: upload the file to the target machine
-		target := getIPv4from(ir[idx].hostname) //TODO switch to ipv4
+
+		//TODO goftp doesn't support EPSV for ipv6
+		//just switch to ipv4 address for onetime upload
+		target, err := getIPv4from(ir[idx].hostname)
+		if err != nil {
+			fmt.Printf("can't get ipv4 address: %s, fall back to use hostname: %s\n", err, ir[idx].hostname)
+			target = ir[idx].hostname
+		}
 		uploadFile(target, ir[idx].port, *files)
 		fmt.Println("mission accomplished!")
 

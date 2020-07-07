@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -8,20 +9,20 @@ import (
 	"time"
 )
 
-func getIPv4from(hostname string) string {
+func getIPv4from(hostname string) (string, error) {
 	ips, err := net.LookupIP(hostname)
 	if err != nil {
-		return ""
+		return "", err
 	}
 
 	for _, ip := range ips {
 		//this is the first way to distinguish ipv4 and ipv6 address
 		if ip.To4() != nil {
 			//the first ipv4 address is enough for us. ignore the others
-			return ip.String()
+			return ip.String(), nil
 		}
 	}
-	return ""
+	return "", errors.New("can't find ipv4 address")
 }
 
 func instanceNameFactory() string {
