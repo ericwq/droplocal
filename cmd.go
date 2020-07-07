@@ -82,9 +82,10 @@ func configFtpServer(iName string) *gserver.Server {
 		Perm:     gserver.NewSimplePerm("user", "group"),
 	}
 	opts := &gserver.ServerOpts{
-		Name:    iName,
-		Factory: factory,
-		Port:    servPort,
+		Name:           iName,
+		WelcomeMessage: "Welcom to the drop link FTP server",
+		Factory:        factory,
+		Port:           servPort,
 		//Hostname: *host, //according to the doc, the default value is enough.
 		Auth: &gserver.SimpleAuth{Name: *user, Password: *pass},
 	}
@@ -320,7 +321,8 @@ func main() {
 		idx := chooseInstance(ir)
 
 		//step3: upload the file to the target machine
-		uploadFile(ir[idx].hostname, ir[idx].port, *files)
+		target := getIPv4from(ir[idx].hostname) //TODO switch to ipv4
+		uploadFile(target, ir[idx].port, *files)
 		fmt.Println("mission accomplished!")
 
 	} else {
@@ -347,37 +349,3 @@ func main() {
 		}
 	}
 }
-
-/*
-func findInstance() {
-	waitTime := 2
-	// Discover all services on the network (e.g. _droplocal._tcp)
-	resolver, err := zeroconf.NewResolver(nil)
-	if err != nil {
-		log.Fatalln("Failed to initialize resolver:", err.Error())
-	}
-
-	entries := make(chan *zeroconf.ServiceEntry)
-	go func(results <-chan *zeroconf.ServiceEntry) {
-		//print the service on local link
-		for entry := range results {
-			fmt.Printf("found \"%[1]s\"\n", entry.Instance)
-			log.Printf("ServiceName = %s\n", entry.ServiceName())
-			log.Printf("HostName = %s\n", entry.HostName)
-			log.Printf("Port = %v\n\n", entry.Port)
-		}
-		fmt.Println("\nNo more droplocal service.")
-	}(entries)
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(waitTime))
-	defer cancel()
-	err = resolver.Browse(ctx, servType, servDomain, entries)
-	if err != nil {
-		log.Fatalln("Failed to browse:", err.Error())
-	}
-
-	<-ctx.Done()
-	// Wait some additional time to see debug messages on go routine shutdown.
-	time.Sleep(1 * time.Second)
-}
-*/

@@ -3,8 +3,33 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
+	"strings"
 	"testing"
 )
+
+func TestGetIPv4From(t *testing.T) {
+	//hostname, _ := os.Hostname()
+	//getIPv4from()
+	hostname, _ := os.Hostname()
+	addr, _ := net.LookupIP(hostname) //"Oppenheimer.local")
+	for _, a := range addr {
+		//this is the first way to distinguish ipv4 and ipv6 address
+		if a.To4() != nil {
+			fmt.Println("it's ipv4", a)
+		} else {
+			fmt.Println("it's ipv6", a)
+		}
+		//this is the second way to distinguish ipv4 and ipv6 address
+		if strings.Contains(a.String(), ":") {
+			fmt.Println("IPv6 address: ", a)
+		} else {
+
+			fmt.Println("IPv4 address: ", a)
+		}
+
+	}
+}
 
 func TestIF(t *testing.T) {
 	// Get all network interfaces
