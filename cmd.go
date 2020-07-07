@@ -12,10 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	fdriver "github.com/goftp/file-driver"
-	gserver "github.com/goftp/server"
 	"github.com/grandcat/zeroconf"
 	"github.com/jlaffaye/ftp"
+	gserver "goftp.io/server"
 )
 
 const servNamePrefix = "Drop Local"
@@ -78,7 +77,7 @@ func configFtpServer(iName string) *gserver.Server {
 	}
 
 	// prepare to start the droplocal services
-	factory := &fdriver.FileDriverFactory{
+	factory := &gserver.FileDriverFactory{
 		RootPath: *servDir,
 		Perm:     gserver.NewSimplePerm("user", "group"),
 	}
@@ -243,7 +242,7 @@ func uploadFile(host string, port int, file string) {
 	// upload it
 	err = c.Stor(fi, f)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if err := c.Quit(); err != nil {
