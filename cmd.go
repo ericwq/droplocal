@@ -221,7 +221,7 @@ func uploadFile(host string, port int, file string) {
 	addr := fmt.Sprintf("%s:%d", host, port)
 
 	// step 2: uploaded the specivied file
-	c, err := ftp.Dial(addr, ftp.DialWithTimeout(5*time.Second))
+	c, err := ftp.Dial(addr, ftp.DialWithTimeout(5*time.Second), ftp.DialWithDisabledEPSV(false))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -313,6 +313,10 @@ func main() {
 		ir, err := listInstance(servType, servDomain, 3)
 		if err != nil {
 			fmt.Printf("when pick up instance, there is an error: %s\n", err)
+		}
+		if len(ir) == 0 {
+			fmt.Println("there is no droplocal service available.")
+			return
 		}
 		idx := chooseInstance(ir)
 
