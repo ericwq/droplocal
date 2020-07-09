@@ -14,7 +14,9 @@ import (
 
 	"github.com/grandcat/zeroconf"
 	"github.com/jlaffaye/ftp"
-	gserver "goftp.io/server"
+
+	"goftp.io/server/core"
+	"goftp.io/server/driver/file"
 )
 
 const servNamePrefix = "Drop Local"
@@ -65,7 +67,7 @@ func advertiseWith(iName string) *zeroconf.Server {
 	return service
 }
 
-func configFtpServer(iName string) *gserver.Server {
+func configFtpServer(iName string) *core.Server {
 	// the server needs a dir to save the download files
 	if *servDir == "" {
 		//using the user's home directory as the default serve directory
@@ -77,25 +79,25 @@ func configFtpServer(iName string) *gserver.Server {
 	}
 
 	// prepare to start the droplocal services
-	factory := &gserver.FileDriverFactory{
+	factory := &file.DriverFactory{
 		RootPath: *servDir,
-		Perm:     gserver.NewSimplePerm("user", "group"),
+		Perm:     core.NewSimplePerm("user", "group"),
 	}
-	opts := &gserver.ServerOpts{
+	opts := &core.ServerOpts{
 		Name:           iName,
 		WelcomeMessage: "Welcom to the drop link FTP server",
 		Factory:        factory,
 		Port:           servPort,
 		//Hostname: *host, //according to the doc, the default value is enough.
-		Auth: &gserver.SimpleAuth{Name: *user, Password: *pass},
+		Auth: &core.SimpleAuth{Name: *user, Password: *pass},
 	}
 
 	log.Printf("the serve dir is %s\n", *servDir)
 	log.Printf("username %v, password %v", *user, *pass)
-	return gserver.NewServer(opts)
+	return core.NewServer(opts)
 }
 
-func startFtpServer(ftpServer *gserver.Server) {
+func startFtpServer(ftpServer *core.Server) {
 
 	// start the droplocal service
 	err := ftpServer.ListenAndServe()
@@ -190,16 +192,22 @@ func uploadFile(host string, port int, file string) {
 // inputDest show the list to the client, let them choose one by index
 // return the client chosen index
 func chooseInstance(ir []iRecord) (idx int) {
-	for {
-		fmt.Printf("%5s |  %s\n", "index", "service name @ machine")
+	fmt.Printf("%5s | %s\n", "index", "service name @ machine")
 
-		for i, one := range ir {
-			fmt.Printf("[%3d] | %s@%s\n", i, one.iName, one.hostname)
+	for i, one := range ir {
+		fmt.Printf("[%3d] | %s@%s\n", i, one.iName, one.hostname)
+	}
+	for {
+		fmt.Printf("please use the index to choose.\n")
+		_, err := fmt.Scanf("%d\n", &idx)
+		if err != nil {
+			fmt.Printf("wrong input! num=%d,err=%s\n", &idx, err)
+			continue
 		}
-		fmt.Println("please choose the destination, please use the index to choose.")
-		fmt.Scanf("%d\n", &idx)
 		if (idx <= len(ir)-1) && (idx >= 0) {
 			break //right between 0:len([]iRecodd)-1
+		} else {
+			fmt.Printf("wrong index range, [0-%d] is valid\n", len(ir)-1)
 		}
 	}
 
