@@ -1,6 +1,8 @@
 # DropLocal
 
-allow LAN user transfer files to each other without knowing machine name / port number first. it's based on zero configuration network or bonjour technology. writing with go language.it's a try project for me to get familiar with the zero configuration network.
+allow LAN user transfer files to each other without knowing machine name / port number first. it's based on zero configuration network (or bonjour) technology. the original idea is to share document/photo between linux/windows/mobile devices.
+
+currently, it's a command line tool. it has been tested on the Mac laptop. I plan to add a gui for it.
 
 ## install
 ` go get github.com/ericwq/droplocal ` get the source and build the executable file by ` go build `
